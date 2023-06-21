@@ -236,7 +236,9 @@ t <- ggplot() +
 
 7. find a dubious penguin record and identify who's to blame
 ```{r}
-
+for (variable in vector) {
+  
+}
 ```
 
 8. Filter the data set to only iNaturalist records (see column institutionCode), split by species, and write each species data to a separate file in a folder called `inat_penguins`  You'll also need a function called `paste` or `paste0`

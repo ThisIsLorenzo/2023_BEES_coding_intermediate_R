@@ -24,7 +24,7 @@ files <- list.files("data/penguins/", full.names = TRUE)
 data <- list()
 for (i in seq_along(files)) {
   cat(i)
-  data[[i]] <- read_csv(files[i])
+  data[[i]] <- read_csv(files[i], show_col_types = FALSE)
 }
 data <- data |> bind_rows()
 ```
@@ -74,7 +74,7 @@ for (f in unique(data$genus)) {
   data_sub <- subset(data, data$genus == f)
   n[[f]] <- data.frame(family = f, n = n_distinct(data_sub$scientificName))
 }
-data <- bind_rows(n)
+data_n <- bind_rows(n)
 ```
 
 The tidyverse way
@@ -120,6 +120,12 @@ For more examples and a comparison between the old and new pipe, see
 1. Take the mean of all latitudes  (should be -43.90382)
 
 ```{r}
+data$decimalLatitude <- as.numeric(data$decimalLatitude)
+
+mean_lat <- data |> 
+  filter(!is.na(decimalLatitude)) |> 
+  summarise(mean(decimalLatitude, na.rm = TRUE)) 
+print(mean_lat)
 
 ```
 
@@ -127,25 +133,34 @@ For more examples and a comparison between the old and new pipe, see
 2. Take the mean of all latitudes  for oberservations from june july and august (should be -31.0683)
 
 ```{r}
-
+mean_lat_jja <- data |> 
+  filter(month %in% c(6,7,8)) |> 
+  summarise(mean(decimalLatitude))
+  print(mean_lat_jja)
 ```
 
 3. Take the mean of all latitudes  for oberservations from december, january and february (should be -47.07444)
 
 ```{r}
-
+mean_lat_jja <- data |> 
+  filter(month == c(12,1,2)) |> 
+  summarise(mean(decimalLatitude))
+  print(mean_lat_jja)
 ```
 
 4. List all the species names in alphabetic order
 
 ```{r}
-
+data$species |> 
+  unique()
 ```
 
 5. List all the species names in reverse alphabetic order
 
 ```{r}
-
+data$species |> 
+  unique() |> 
+  sort(decreasing = TRUE)
 ```
 
 
@@ -203,25 +218,37 @@ data_subset <-
 1. Create a subset of the dataset consisting of only rows for the genus "Aptenodytes"
 
 ```{r}
-
+data_apte <- data |> 
+  filter(genus == "Aptenodytes")
 ```
 
 2. As above and only including variables `scientificName`, `decimalLatitude`, `decimalLongitude `
 
 ```{r}
-
+data_apte2 <- data |> 
+  filter(genus == "Aptenodytes") |> 
+  select(scientificName, decimalLatitude, decimalLongitude)
 ```
 
 3. As above but with data sorted  by `decimalLatitude`
 
 ```{r}
-
+data_apte2 <- data |> 
+  filter(genus == "Aptenodytes") |> 
+  select(scientificName, decimalLatitude, decimalLongitude) |> 
+  arrange(decimalLatitude) |> 
+  View()
 ```
 
 4. As above but with an additional column  giving the absolute value of `decimalLatitude`
 
 ```{r}
-
+data_apte2 <- data |> 
+  filter(genus == "Aptenodytes") |> 
+  select(scientificName, decimalLatitude, decimalLongitude) |> 
+  arrange(decimalLatitude) |> 
+  mutate(lat_abs = abs(decimalLatitude)) |> 
+  View()
 ```
 
 ## group_by --  a type of for loop
@@ -234,20 +261,26 @@ data |>
   summarise(
     n_sp = n_distinct(scientificName),
     n_records = n()
-  )
+  ) |> 
+  View()
 ```
 
 How does this work?  (white board)
 
 Split apply combine concept
 
-
 **Exercises:** 
 
 1. Use dplyr's group_by function to get for each species, the number of records, min and max of decimalLatitude
 
 ```{r}
-
+data |> 
+  group_by(species) |> 
+  summarise(
+    n_records = n(),
+    min = min(decimalLatitude),
+    max = max(decimalLatitude)
+  )
 ```
 
 
@@ -333,14 +366,18 @@ Important to understand how a list works
 1. Load the first 10 files in the folder "data/species"
 
 ```{r}
-
+files <- list.files("data/penguins", full.names = TRUE)[1:10] |> 
+  map_df(read.csv)
 ```
 
 
 2.  Split the dataset by genus -- then count the number of rows. The function `split` is useful here.
 
 ```{r}
+# files_10_bind <- files_10 |> 
+#   bind_rows()
 
+files_10_split <- split(files_10, files_10$genus)
 ```
 
 
