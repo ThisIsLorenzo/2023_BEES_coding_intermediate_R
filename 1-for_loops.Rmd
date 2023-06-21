@@ -39,17 +39,37 @@ keep this in mind for the tasks below.
 1. Write a `for` loop that prints out each letter sequentially through the alphabet
 
 ```{r}
-
+for (alphabet in letters) {
+  print(alphabet)
+}
 ```
 
 2. (stretch) Write a `for` loop that prints out every letter except `q`.  never liked `q` anyway.  
 
 ```{r}
+for (alphabet in letters) {
+    if (alphabet == 'q'){
+      next
+    }
+        print(alphabet)
+}
 
+#OR
+
+for (alphabet in letters) {
+    if (alphabet != 'q')
+        print(alphabet)
+}
+
+#OR
+
+for (alphabet in letters[letters != "q"]) {
+        print(alphabet)
+}
 ```
 
 
-Now some fun code (which will also be useful later). This code makes a plot of the world.  Iou can see that it's just a `ggplot` call with a `geom_polygon` added.  Then the `coord_fixed` call is just scaling x relative y so that the world is not distorted.  This is a common thing to do with maps.
+Now some fun code (which will also be useful later). This code makes a plot of the world.  You can see that it's just a `ggplot` call with a `geom_polygon` added.  Then the `coord_fixed` call is just scaling x relative y so that the world is not distorted.  This is a common thing to do with maps.
 
 ```{r}
 world <- map_data("world")
@@ -106,7 +126,7 @@ dim(output_df)
 Ugh this is gonna take forever ... what about a loop?
 
 ```{r}
-files <- list.files("data/penguins/", full.names = TRUE)
+files <- list.files("data/penguins/", full.names = TRUE) #full.names is necessary otherwise it saves the names of csv files in penguins in a vector names files
 ```
 
 sometimes you want to use the index in the `for` loop for two different things, (1) going through the input vector and (2) storing in the output list. In this case the convention is to use the letter `i`, because it's hard to think of a more informative way to describe these two different (but related) roles.  The vector that `i` goes over is *usually* from 1 to the number of inputs or in this case `1:length(files)`
@@ -128,6 +148,7 @@ That's it. you're now all `for` loop experts. Time for practice.
 1. Calculate how many species, genera, families, and orders there are in this dataset
 
 ```{r}
+
 
 ```
 
