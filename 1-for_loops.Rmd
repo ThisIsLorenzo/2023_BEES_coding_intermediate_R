@@ -116,7 +116,11 @@ list_of_data[[1]] <- read_csv(csv_file_name_vector[1])
 list_of_data[[2]] <- read_csv(csv_file_name_vector[2])
 
 dim(list_of_data[[1]])
+#[1] 330  50
 dim(list_of_data[[2]])
+#[1] 3430   50
+
+colnames(list_of_data[[1]]) == colnames(list_of_data[[2]]) #same columns, we can bind them
 
 output_df <- bind_rows(list_of_data)
 
@@ -137,6 +141,8 @@ for (i in 1:length(files)) {
   pen[[i]] <- read_csv(files[i])
 }
 
+class(pen) #checking what type of elemtn pen is
+# [1] "list"]
 pen_all <- bind_rows(pen)
 dim(pen_all)
 ```
@@ -148,32 +154,83 @@ That's it. you're now all `for` loop experts. Time for practice.
 1. Calculate how many species, genera, families, and orders there are in this dataset
 
 ```{r}
-
-
+n_distinct(pen_all$species)
+#[1] 19
+n_distinct(pen_all$genus)
+#[1] 6
+n_distinct(pen_all$family)
+#[1] 1
+n_distinct(pen_all$order)
+#[1] 1
 ```
 
 2. calculate the proportion of points from iNaturalist and eBird using the institutionCode (the code for eBird is confusingly "CLO"; the code for iNaturalist is more sensibly "iNaturalist")
 
 ```{r}
+clo_count <- pen_all %>% 
+  filter(institutionCode == "CLO") %>% 
+  summarise(count = n())
+inat_count <- pen_all %>% 
+  filter(institutionCode == "iNaturalist") %>% 
+  summarise(count = n())
+(clo_count/(inat_count+clo_count))*100
+(inat_count/(inat_count+clo_count))*100
 
 ```
 
 3. plot the geographic distribution of observations with the colors showing genus, try to make it look good.  (this blog might help https://sarahpenir.github.io/r/making-maps/)
 
 ```{r}
+worldmap <- ggplot() +
+  geom_polygon(data = world, aes(x=long, 
+                          y = lat,
+                          group = group)) + 
+  coord_fixed(1.3)
 
+genus_map <- worldmap +
+  geom_point(data = pen_all, aes(x = decimalLongitude, y = decimalLatitude, col=genus), size = 5)
+
+genus_map
 ```
 
 5. write a for loop that makes a map of each genus in a separate file with species as the colors.  Save the maps in a folder called `penguin_maps`.  `ggsave` is a handy function.  
 
 ```{r}
+pen_genera <- unique(pen_all$genus)
+
+for (g in pen_genera) {
+  data_genus <- pen_all %>% 
+    filter(genus == g)
+  
+p <- ggplot() +
+  geom_polygon(data = world, aes(x=long, y = lat, group = group)) + 
+  coord_fixed(1.3) +
+  geom_point(data = data_genus, aes(x = decimalLongitude, y = decimalLatitude, col=species), size = 5)
+    
+ggsave(paste0(g, ".png"), p, path = "output")
+}
 
 ```
 
 6. plot the geographic distribution of observations of more than 1000 penguins, with the colors showing number of penguins observed
 
 ```{r}
+unique(pen_all$individualCount)
 
+pen_1000 <- unique(pen_all$individualCount)
+
+for (h in pen_1000) {
+  data_1000 <- pen_all %>% 
+    filter(individualCount > 1000)
+  
+t <- ggplot() +
+  geom_polygon(data = world, aes(x=long, y = lat, group = group)) + 
+  coord_fixed(1.3) +
+  geom_point(data = data_1000, aes(x = decimalLongitude, y = decimalLatitude, col= individualCount), size = 3) +
+  scale_color_continuous(limits = c(1000, max(data_1000$individualCount)))
+    
+#ggsave(paste0(h, ".png"), t, path = "output")
+}
 ```
 
 
